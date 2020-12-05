@@ -7,8 +7,26 @@ app.use(morgan('common'));
 const playlist = require('./STORE');
 
 app.get('/apps', (req, res) => {
-    res.send("hello")
-    res.json(playlist)
+    const {search = "", sort} = req.query;
+    if(sort) {
+        if(!['App', 'Rating'].includes(sort)) {
+            return res.status(400).send(
+                'Sort must be of either "Title", or "Rating"')
+        }
+    }
+    
+    let results = playlist.filter(apps => 
+        apps.App.toLowerCase().includes(search.toLowerCase())
+    )
+
+    if (sort) {
+        results.sort((a, b) => {
+          return a[sort] > b[sort] ? 1 : a[sort] < b[sort] ? -1 : 0;
+        });
+      }
+
+    res.json(results);
+
 })
 
 app.listen(8000, () => {
